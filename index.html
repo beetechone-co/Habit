@@ -160,18 +160,45 @@
 
         <!-- ================= VIEW 2: MONTHLY TASKS ================= -->
         <div id="viewMonthlyTasks" class="hidden space-y-5">
-            <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 rounded-2xl p-5 text-white shadow-md">
-                <div class="flex justify-between items-start">
+            <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 rounded-2xl p-5 text-white shadow-md space-y-4">
+                <div class="flex items-center justify-between gap-2">
                     <div>
-                        <span class="text-xs text-indigo-200 font-semibold uppercase tracking-wider">Mục tiêu theo tháng</span>
-                        <h2 class="text-xl font-bold mt-0.5">Tháng <span id="monthlyTaskTitleDate"></span></h2>
+                        <span class="text-[11px] text-indigo-200 font-semibold uppercase tracking-wider">Mục tiêu theo tháng</span>
+                        <h2 class="text-lg md:text-xl font-bold mt-0.5">Tiến Độ Tháng <span id="monthlyTaskTitleDate"></span></h2>
                     </div>
-                    <span id="monthlyTaskBadge" class="bg-indigo-500/40 text-amber-300 border border-indigo-400/30 text-xs font-bold px-3 py-1 rounded-full">
-                        0 / 0 Đạt
-                    </span>
+
+                    <!-- Month Timeline & Selector Control -->
+                    <div class="flex items-center gap-1 bg-indigo-900/60 p-1 rounded-xl border border-indigo-400/30">
+                        <button onclick="navigateMonthlyTaskMonth(-1)" title="Tháng trước" class="w-8 h-8 rounded-lg hover:bg-indigo-700/80 flex items-center justify-center transition-colors text-xs">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <select id="monthlyTaskMonthSelect" onchange="handleMonthlyTaskMonthSelect()" class="bg-transparent text-white font-bold text-xs px-2 py-1 focus:outline-none cursor-pointer border-none text-center">
+                            <!-- Populated via JS -->
+                        </select>
+                        <button onclick="navigateMonthlyTaskMonth(1)" title="Tháng sau" class="w-8 h-8 rounded-lg hover:bg-indigo-700/80 flex items-center justify-center transition-colors text-xs">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
                 </div>
+
+                <!-- Monthly Goals Metrics Breakdown -->
+                <div class="grid grid-cols-3 gap-2 pt-1 border-t border-indigo-500/30 text-center">
+                    <div class="bg-indigo-900/40 p-2 rounded-xl border border-indigo-400/20">
+                        <span class="text-[10px] text-indigo-200 block uppercase font-medium">Tổng việc</span>
+                        <span id="monthlyMetricTotal" class="text-base font-black text-white">0</span>
+                    </div>
+                    <div class="bg-indigo-900/40 p-2 rounded-xl border border-indigo-400/20">
+                        <span class="text-[10px] text-indigo-200 block uppercase font-medium">Đã xong</span>
+                        <span id="monthlyMetricDone" class="text-base font-black text-amber-300">0</span>
+                    </div>
+                    <div class="bg-indigo-900/40 p-2 rounded-xl border border-indigo-400/20">
+                        <span class="text-[10px] text-indigo-200 block uppercase font-medium">Chưa xong</span>
+                        <span id="monthlyMetricPending" class="text-base font-black text-rose-300">0</span>
+                    </div>
+                </div>
+
                 <!-- Progress bar -->
-                <div class="w-full bg-indigo-950/50 h-2 rounded-full mt-4 overflow-hidden border border-indigo-400/20">
+                <div class="w-full bg-indigo-950/50 h-2 rounded-full overflow-hidden border border-indigo-400/20">
                     <div id="monthlyTaskProgressBar" class="bg-amber-400 h-full w-0 transition-all duration-500"></div>
                 </div>
             </div>
@@ -179,14 +206,41 @@
             <!-- Add Monthly Task Form -->
             <form onsubmit="handleAddMonthlyTask(event)" class="flex gap-2">
                 <input type="text" id="newMonthlyTaskInput" placeholder="Thêm việc cần hoàn thành trong tháng này..." required class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-xs font-medium">
-                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1 shadow-sm">
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1 shadow-sm shrink-0">
                     <i class="fa-solid fa-plus"></i> Thêm việc tháng
                 </button>
             </form>
 
+            <!-- Task Status Filter Tabs -->
+            <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                <h3 class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                    <i class="fa-solid fa-list-check text-indigo-600"></i> Danh sách mục tiêu tháng
+                </h3>
+                <div class="flex gap-1 text-[11px] font-semibold">
+                    <button id="filterMonthlyAll" onclick="setMonthlyTaskFilter('all')" class="px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-700">Tất cả</button>
+                    <button id="filterMonthlyPending" onclick="setMonthlyTaskFilter('pending')" class="px-2.5 py-1 rounded-lg text-slate-500 hover:bg-slate-100">Chưa xong</button>
+                    <button id="filterMonthlyDone" onclick="setMonthlyTaskFilter('done')" class="px-2.5 py-1 rounded-lg text-slate-500 hover:bg-slate-100">Đã xong</button>
+                </div>
+            </div>
+
             <!-- Monthly Task List -->
             <div class="space-y-2.5" id="monthlyTaskContainer">
                 <!-- Loaded via JS -->
+            </div>
+
+            <!-- Monthly Reflection Note Section -->
+            <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-2">
+                <label class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <i class="fa-regular fa-bookmark text-indigo-600"></i>
+                    Ghi chú & Định hướng cần lưu ý trong tháng
+                </label>
+                <textarea id="monthlyNoteInput" rows="3" placeholder="Ghi lại các định hướng lớn, mục tiêu trọng tâm hoặc điều cần chú ý trong tháng này..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white resize-none transition-all"></textarea>
+                <div class="flex justify-between items-center pt-1">
+                    <span class="text-[10px] text-slate-400">Tự động lưu theo tháng được chọn</span>
+                    <button onclick="saveMonthlyNote()" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-xl font-medium transition-colors shadow-xs">
+                        Lưu ghi chú tháng
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -369,15 +423,24 @@
 
         // Default Monthly Tasks Template
         const DEFAULT_MONTHLY_TASKS = [
-            { id: 'm_def_1', name: 'Hoàn thành đều đặn các thói quen tốt mỗi ngày', done: false },
-            { id: 'm_def_2', name: 'Phát biểu 15 chữ ký', done: false },
-            { id: 'm_def_3', name: 'Đạt được 2 truyền đạo hữu hiệu', done: false }
+            { id: 'm_def_1', name: 'Đọc hoàn thành 1 cuốn sách lẽ thật trong tháng', done: false },
+            { id: 'm_def_2', name: 'Tĩnh nguyện & Kiêng ăn cầu nguyện 1 ngày', done: false },
+            { id: 'm_def_3', name: 'Tổng kết và đánh giá bảng điểm thói quen tháng', done: false }
         ];
+
+        // Helper to get local date string YYYY-MM-DD
+        function getTodayString() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
 
         // Global Application State
         let profile = JSON.parse(localStorage.getItem('user_profile')) || {
-            name: 'Elohist',
-            motto: 'Kỷ luật là sức mạnh, kiên trì 66 ngày !',
+            name: 'Người Dùng Rèn Luyện',
+            motto: 'Kiên trì mỗi ngày, kiến tạo tương lai',
             year: '2026'
         };
         let passcode = localStorage.getItem('user_passcode') || '';
@@ -385,9 +448,12 @@
         let records = JSON.parse(localStorage.getItem('habit_records')) || {}; 
         let monthlyTasks = JSON.parse(localStorage.getItem('monthly_tasks')) || {};
         let dailyNotes = JSON.parse(localStorage.getItem('daily_notes')) || {};
+        let monthlyNotes = JSON.parse(localStorage.getItem('monthly_notes')) || {};
         
-        let selectedDate = new Date().toISOString().split('T')[0];
+        let selectedDate = getTodayString();
         let archiveMonthKey = selectedDate.substring(0, 7); // Default to current month "YYYY-MM"
+        let monthlyTaskMonthKey = selectedDate.substring(0, 7); // Month Key for Monthly Tasks tab
+        let monthlyTaskFilter = 'all'; // 'all' | 'pending' | 'done'
 
         // DOM Elements
         const datePicker = document.getElementById('datePicker');
@@ -415,10 +481,35 @@
                 renderAllViews();
             });
 
+            // Automatic date & month transition handler
+            checkAndAutoTransitionDate();
+
+            // Re-check date transition when user re-focuses tab/window
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    checkAndAutoTransitionDate();
+                }
+            });
+
             renderProfile();
             populateArchiveMonthDropdown();
+            populateMonthlyTaskMonthDropdown();
             renderAllViews();
         });
+
+        /* Auto Transition Date & Month Logic */
+        function checkAndAutoTransitionDate() {
+            const nowString = getTodayString();
+            if (selectedDate !== nowString) {
+                selectedDate = nowString;
+                datePicker.value = selectedDate;
+                archiveMonthKey = selectedDate.substring(0, 7);
+                monthlyTaskMonthKey = selectedDate.substring(0, 7);
+                populateArchiveMonthDropdown();
+                populateMonthlyTaskMonthDropdown();
+                renderAllViews();
+            }
+        }
 
         /* Password Lock Logic */
         function unlockApp() {
@@ -487,11 +578,13 @@
             
             saveData('user_profile', profile);
             renderProfile();
+            populateArchiveMonthDropdown();
+            populateMonthlyTaskMonthDropdown();
             closeProfileModal();
         }
 
         function getSelectedMonthKey() {
-            return selectedDate.substring(0, 7); // "YYYY-MM"
+            return monthlyTaskMonthKey || selectedDate.substring(0, 7); // "YYYY-MM"
         }
 
         function ensureMonthlyTasksExist(monthKey) {
@@ -517,6 +610,9 @@
 
         // Tab Switching Logic
         function switchTab(tab) {
+            // Check auto date transition every time user switches tab
+            checkAndAutoTransitionDate();
+
             const tabs = ['Daily', 'MonthlyTasks', 'MonthlyStats'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab${t}`);
@@ -532,6 +628,66 @@
             });
 
             renderAllViews();
+        }
+
+        function populateMonthlyTaskMonthDropdown() {
+            const select = document.getElementById('monthlyTaskMonthSelect');
+            if (!select) return;
+            select.innerHTML = '';
+            
+            const currentYear = parseInt(profile.year) || new Date().getFullYear();
+
+            for (let m = 1; m <= 12; m++) {
+                const monthStr = String(m).padStart(2, '0');
+                const key = `${currentYear}-${monthStr}`;
+                const option = document.createElement('option');
+                option.value = key;
+                option.innerText = `Tháng ${m}/${currentYear}`;
+                if (key === monthlyTaskMonthKey) option.selected = true;
+                select.appendChild(option);
+            }
+        }
+
+        function handleMonthlyTaskMonthSelect() {
+            monthlyTaskMonthKey = document.getElementById('monthlyTaskMonthSelect').value;
+            renderMonthlyTasks();
+        }
+
+        function navigateMonthlyTaskMonth(delta) {
+            const [y, m] = monthlyTaskMonthKey.split('-').map(Number);
+            let date = new Date(y, m - 1 + delta, 1);
+            const newY = date.getFullYear();
+            const newM = String(date.getMonth() + 1).padStart(2, '0');
+            monthlyTaskMonthKey = `${newY}-${newM}`;
+
+            const select = document.getElementById('monthlyTaskMonthSelect');
+            if (select) select.value = monthlyTaskMonthKey;
+
+            renderMonthlyTasks();
+        }
+
+        function setMonthlyTaskFilter(filter) {
+            monthlyTaskFilter = filter;
+            const btnAll = document.getElementById('filterMonthlyAll');
+            const btnPending = document.getElementById('filterMonthlyPending');
+            const btnDone = document.getElementById('filterMonthlyDone');
+
+            const activeClass = "px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-700 font-bold";
+            const inactiveClass = "px-2.5 py-1 rounded-lg text-slate-500 hover:bg-slate-100";
+
+            btnAll.className = filter === 'all' ? activeClass : inactiveClass;
+            btnPending.className = filter === 'pending' ? activeClass : inactiveClass;
+            btnDone.className = filter === 'done' ? activeClass : inactiveClass;
+
+            renderMonthlyTasks();
+        }
+
+        function saveMonthlyNote() {
+            const monthKey = getSelectedMonthKey();
+            const text = document.getElementById('monthlyNoteInput').value.trim();
+            monthlyNotes[monthKey] = text;
+            saveData('monthly_notes', monthlyNotes);
+            alert(`Đã lưu ghi chú cho Tháng ${monthKey.split('-')[1]}/${monthKey.split('-')[0]}!`);
         }
 
         function handleAddHabit(e) {
@@ -662,18 +818,36 @@
         function renderMonthlyTasks() {
             const monthKey = getSelectedMonthKey();
             const container = document.getElementById('monthlyTaskContainer');
-            document.getElementById('monthlyTaskTitleDate').innerText = `${monthKey.split('-')[1]}/${monthKey.split('-')[0]}`;
+            const [yr, mo] = monthKey.split('-');
+            
+            document.getElementById('monthlyTaskTitleDate').innerText = `${mo}/${yr}`;
             
             container.innerHTML = '';
             const tasks = ensureMonthlyTasksExist(monthKey);
             let doneCount = 0;
 
-            tasks.forEach(task => {
-                if(task.done) doneCount++;
+            tasks.forEach(t => { if(t.done) doneCount++; });
+            const totalCount = tasks.length;
+            const pendingCount = totalCount - doneCount;
 
+            document.getElementById('monthlyMetricTotal').innerText = totalCount;
+            document.getElementById('monthlyMetricDone').innerText = doneCount;
+            document.getElementById('monthlyMetricPending').innerText = pendingCount;
+
+            const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+            document.getElementById('monthlyTaskProgressBar').style.width = `${pct}%`;
+
+            // Filter tasks
+            const filteredTasks = tasks.filter(task => {
+                if (monthlyTaskFilter === 'pending') return !task.done;
+                if (monthlyTaskFilter === 'done') return task.done;
+                return true;
+            });
+
+            filteredTasks.forEach(task => {
                 const card = document.createElement('div');
                 card.className = `flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer ${
-                    task.done ? 'bg-indigo-50/70 border-indigo-200' : 'bg-white border-slate-100 hover:border-slate-200'
+                    task.done ? 'bg-indigo-50/70 border-indigo-200' : 'bg-white border-slate-100 hover:border-slate-200 shadow-xs'
                 }`;
 
                 card.innerHTML = `
@@ -692,13 +866,12 @@
                 container.appendChild(card);
             });
 
-            if (tasks.length === 0) {
-                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs">Chưa có công việc nào cho tháng này. Hãy thêm mới ở trên!</div>`;
+            if (filteredTasks.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs">Chưa có mục tiêu nào trong mục này cho Tháng ${mo}/${yr}.</div>`;
             }
 
-            document.getElementById('monthlyTaskBadge').innerText = `${doneCount} / ${tasks.length} Đạt`;
-            const pct = tasks.length > 0 ? Math.round((doneCount / tasks.length) * 100) : 0;
-            document.getElementById('monthlyTaskProgressBar').style.width = `${pct}%`;
+            // Sync Monthly Note Input
+            document.getElementById('monthlyNoteInput').value = monthlyNotes[monthKey] || '';
         }
 
         function populateArchiveMonthDropdown() {
@@ -841,7 +1014,7 @@
         }
 
         function exportDataJSON() {
-            const data = { profile, habits, records, monthlyTasks, dailyNotes };
+            const data = { profile, habits, records, monthlyTasks, dailyNotes, monthlyNotes };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -863,6 +1036,7 @@
                     if (imported.records) saveData('habit_records', imported.records);
                     if (imported.monthlyTasks) saveData('monthly_tasks', imported.monthlyTasks);
                     if (imported.dailyNotes) saveData('daily_notes', imported.dailyNotes);
+                    if (imported.monthlyNotes) saveData('monthly_notes', imported.monthlyNotes);
 
                     location.reload();
                 } catch (err) {
