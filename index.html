@@ -423,9 +423,9 @@
 
         // Default Monthly Tasks Template
         const DEFAULT_MONTHLY_TASKS = [
-            { id: 'm_def_1', name: 'Đọc hoàn thành 1 cuốn sách lẽ thật trong tháng', done: false },
-            { id: 'm_def_2', name: 'Tĩnh nguyện & Kiêng ăn cầu nguyện 1 ngày', done: false },
-            { id: 'm_def_3', name: 'Tổng kết và đánh giá bảng điểm thói quen tháng', done: false }
+            { id: 'm_def_1', name: 'Hoàn thành EDULMS', done: false },
+            { id: 'm_def_2', name: 'Hoàn thành 15 chữ ký phát biểu', done: false },
+            { id: 'm_def_3', name: '1 Truda hữu hiệu', done: false }
         ];
 
         // Helper to get local date string YYYY-MM-DD
@@ -643,6 +643,7 @@
                 const option = document.createElement('option');
                 option.value = key;
                 option.innerText = `Tháng ${m}/${currentYear}`;
+                option.className = "text-slate-800 bg-white font-medium py-1";
                 if (key === monthlyTaskMonthKey) option.selected = true;
                 select.appendChild(option);
             }
