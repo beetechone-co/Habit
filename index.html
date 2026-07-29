@@ -73,10 +73,10 @@
                 </div>
                 <div class="truncate flex-1">
                     <div class="flex items-center gap-2">
-                        <h2 id="displayUserName" class="font-bold text-slate-800 text-sm truncate">Người Dùng Rèn Luyện</h2>
+                        <h2 id="displayUserName" class="font-bold text-slate-800 text-sm truncate">Elohist</h2>
                         <span id="displayTargetYear" class="text-[10px] font-extrabold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-md border border-indigo-100">Năm 2026</span>
                     </div>
-                    <p id="displayUserMotto" class="text-xs text-slate-500 truncate italic mt-0.5">"Kiên trì mỗi ngày, kiến tạo tương lai"</p>
+                    <p id="displayUserMotto" class="text-xs text-slate-500 truncate italic mt-0.5">"Kỷ luật là sức mạnh, kiên trì 66 ngày !"</p>
                 </div>
             </div>
 
@@ -359,25 +359,25 @@
         // Initial Default Daily Habits
         const DEFAULT_HABITS = [
             { id: '1', name: 'Thức sớm vào 6h00 sáng' },
-            { id: '2', name: 'Đọc 5 chương Kinh Thánh' },
-            { id: '3', name: 'Đọc 1 chương sách lẽ thật' },
-            { id: '4', name: 'Đọc 1 chương sách giảng đạo' },
-            { id: '5', name: 'Chạy 10 bước chân Mymemo' },
-            { id: '6', name: 'Truyền đạo đơn thuần cho 3 người' },
+            { id: '2', name: 'Hoàn thành MyPage' },
+            { id: '3', name: 'Hoàn thành 10 bước chân MyMemo' },
+            { id: '4', name: 'Truyền đạo đơn thuần cho 2-3 người' },
+            { id: '5', name: 'Không vấp phạm về lời nói, luôn nói lời thiện lành' },
+            { id: '6', name: 'Báo cáo lịch làm việc MyMemo' },
             { id: '7', name: 'Ngủ sớm trước 23h' }
         ];
 
         // Default Monthly Tasks Template
         const DEFAULT_MONTHLY_TASKS = [
-            { id: 'm_def_1', name: 'Đọc hoàn thành 1 cuốn sách lẽ thật trong tháng', done: false },
-            { id: 'm_def_2', name: 'Tĩnh nguyện & Kiêng ăn cầu nguyện 1 ngày', done: false },
-            { id: 'm_def_3', name: 'Tổng kết và đánh giá bảng điểm thói quen tháng', done: false }
+            { id: 'm_def_1', name: 'Hoàn thành đều đặn các thói quen tốt mỗi ngày', done: false },
+            { id: 'm_def_2', name: 'Phát biểu 15 chữ ký', done: false },
+            { id: 'm_def_3', name: 'Đạt được 2 truyền đạo hữu hiệu', done: false }
         ];
 
         // Global Application State
         let profile = JSON.parse(localStorage.getItem('user_profile')) || {
-            name: 'Người Dùng Rèn Luyện',
-            motto: 'Kiên trì mỗi ngày, kiến tạo tương lai',
+            name: 'Elohist',
+            motto: 'Kỷ luật là sức mạnh, kiên trì 66 ngày !',
             year: '2026'
         };
         let passcode = localStorage.getItem('user_passcode') || '';
