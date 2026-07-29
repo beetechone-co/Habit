@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sổ Tay Rèn Luyện Thói Quen & Mục Tiêu Năm</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .glass-panel { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen pb-16 relative">
+
+    <div id="lockScreenModal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center space-y-5 shadow-2xl border border-slate-100">
+            <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-bold text-slate-800">Sổ Tay Được Bảo Vệ</h2>
+                <p class="text-xs text-slate-500 mt-1">Vui lòng nhập mật khẩu/mã PIN để mở khóa</p>
+            </div>
+            <div class="space-y-3">
+                <input type="password" id="unlockPasscodeInput" placeholder="••••••••" maxlength="20" class="w-full text-center text-lg font-mono px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <p id="lockErrorMsg" class="text-xs text-rose-500 hidden font-semibold">Mật khẩu không đúng, vui lòng thử lại!</p>
+                <button onclick="unlockApp()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-2xl shadow-lg shadow-indigo-200 transition-all text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-key"></i> Mở khóa ngay
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-30">
+        <div class="max-w-xl md:max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600/80 p-2 rounded-2xl border border-indigo-400/30 shadow-inner">
+                    <i class="fa-solid fa-book-bookmark text-xl text-amber-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-base md:text-lg font-bold leading-tight">Sổ Tay Rèn Luyện</h1>
+                    <p class="text-[11px] text-indigo-200">Thói quen & Hành trình mục tiêu năm</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <button onclick="openProfileModal()" title="Chỉnh sửa thông tin cá nhân" class="bg-indigo-800/80 hover:bg-indigo-900 text-indigo-100 p-2 rounded-xl border border-indigo-500/50 transition-colors text-xs flex items-center gap-1.5 px-3">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span class="hidden sm:inline font-medium">Hồ sơ</span>
+                </button>
+                <button onclick="toggleLockSettings()" title="Cài đặt Mật khẩu bảo mật" class="bg-indigo-800/80 hover:bg-indigo-900 text-indigo-100 p-2 rounded-xl border border-indigo-500/50 transition-colors">
+                    <i id="lockStatusIcon" class="fa-solid fa-lock text-xs"></i>
+                </button>
+                <button onclick="toggleBackupModal()" title="Sao lưu / Khôi phục dữ liệu" class="bg-indigo-800/80 hover:bg-indigo-900 text-indigo-100 p-2 rounded-xl border border-indigo-500/50 transition-colors">
+                    <i class="fa-solid fa-database text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="bg-white border-b border-slate-200/80 shadow-xs">
+        <div class="max-w-xl md:max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between gap-3">
+            <div class="flex items-center space-x-3 flex-1 min-w-0">
+                <div onclick="openProfileModal()" class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-400 to-indigo-600 text-white flex items-center justify-center font-black text-lg shadow-sm cursor-pointer shrink-0" id="userAvatarBox">
+                    U
+                </div>
+                <div class="truncate flex-1">
+                    <div class="flex items-center gap-2">
+                        <h2 id="displayUserName" class="font-bold text-slate-800 text-sm truncate">Người Dùng Rèn Luyện</h2>
+                        <span id="displayTargetYear" class="text-[10px] font-extrabold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-md border border-indigo-100">Năm 2026</span>
+                    </div>
+                    <p id="displayUserMotto" class="text-xs text-slate-500 truncate italic mt-0.5">"Kiên trì mỗi ngày, kiến tạo tương lai"</p>
+                </div>
+            </div>
+
+            <!-- Date Quick Selector -->
+            <div class="flex items-center gap-1.5 shrink-0">
+                <input type="date" id="datePicker" class="bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+            </div>
+        </div>
+    </div>
+
+    <main class="max-w-xl md:max-w-4xl mx-auto px-4 mt-5 space-y-5">
+
+        <!-- Tab Navigation -->
+        <div class="grid grid-cols-3 bg-slate-200/90 p-1 rounded-2xl font-semibold text-xs text-slate-600 shadow-inner">
+            <button id="tabDaily" onclick="switchTab('daily')" class="py-2.5 rounded-xl text-indigo-700 bg-white shadow-sm transition-all flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-sun text-amber-500"></i>
+                <span>Hàng ngày</span>
+            </button>
+            <button id="tabMonthlyTasks" onclick="switchTab('monthlyTasks')" class="py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-list-check text-indigo-500"></i>
+                <span>Việc theo tháng</span>
+            </button>
+            <button id="tabMonthlyStats" onclick="switchTab('monthlyStats')" class="py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-clock-rotate-left text-emerald-500"></i>
+                <span>Lịch sử & Nhật ký</span>
+            </button>
+        </div>
+
+        <!-- ================= VIEW 1: DAILY HABITS ================= -->
+        <div id="viewDaily" class="space-y-5">
+            
+            <!-- Summary Score Card -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center justify-between">
+                <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Kết quả ngày <span id="displayDateLabel" class="text-indigo-600"></span></span>
+                    <div class="flex items-baseline space-x-1.5 mt-1">
+                        <span id="scoreText" class="text-3xl font-black text-indigo-600">0</span>
+                        <span id="totalText" class="text-sm font-bold text-slate-400">/ 7 điểm</span>
+                    </div>
+                    <p id="motivationalMsg" class="text-xs text-slate-500 mt-1 font-medium">Bắt đầu hoàn thành từng thói quen nhé! 💪</p>
+                </div>
+                
+                <!-- Circular Progress Bar -->
+                <div class="relative w-20 h-20 flex items-center justify-center">
+                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                        <path class="text-slate-100" stroke-width="3.8" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path id="progressCirclePath" class="text-indigo-600 transition-all duration-500 ease-out" stroke-dasharray="0, 100" stroke-width="3.8" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <span id="percentText" class="absolute font-black text-xs text-indigo-900">0%</span>
+                </div>
+            </div>
+
+            <!-- Form: Add Daily Habit -->
+            <form onsubmit="handleAddHabit(event)" class="flex gap-2">
+                <input type="text" id="newHabitInput" placeholder="Thêm thói quen hàng ngày mới..." required class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-xs font-medium">
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1 shadow-sm">
+                    <i class="fa-solid fa-plus"></i> Thêm
+                </button>
+            </form>
+
+            <!-- Habit List -->
+            <div class="space-y-2.5" id="habitContainer">
+                <!-- Loaded via JS -->
+            </div>
+
+            <!-- Daily Reflection / Note -->
+            <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-2">
+                <label class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <i class="fa-regular fa-note-sticky text-amber-500"></i>
+                    Ghi chú & Tự ngẫm hôm nay
+                </label>
+                <textarea id="dailyNoteInput" rows="3" placeholder="Ghi lại bài học Kinh Thánh, cảm nghĩ hoặc lời tạ ơn trong ngày..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white resize-none transition-all"></textarea>
+                <div class="flex justify-between items-center pt-1">
+                    <span class="text-[10px] text-slate-400">Tự động lưu giữ trong kho nhật ký năm</span>
+                    <button onclick="saveDailyNote()" class="text-xs bg-slate-800 hover:bg-black text-white px-3.5 py-1.5 rounded-xl font-medium transition-colors shadow-xs">
+                        Lưu ghi chú
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW 2: MONTHLY TASKS ================= -->
+        <div id="viewMonthlyTasks" class="hidden space-y-5">
+            <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 rounded-2xl p-5 text-white shadow-md">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="text-xs text-indigo-200 font-semibold uppercase tracking-wider">Mục tiêu theo tháng</span>
+                        <h2 class="text-xl font-bold mt-0.5">Tháng <span id="monthlyTaskTitleDate"></span></h2>
+                    </div>
+                    <span id="monthlyTaskBadge" class="bg-indigo-500/40 text-amber-300 border border-indigo-400/30 text-xs font-bold px-3 py-1 rounded-full">
+                        0 / 0 Đạt
+                    </span>
+                </div>
+                <!-- Progress bar -->
+                <div class="w-full bg-indigo-950/50 h-2 rounded-full mt-4 overflow-hidden border border-indigo-400/20">
+                    <div id="monthlyTaskProgressBar" class="bg-amber-400 h-full w-0 transition-all duration-500"></div>
+                </div>
+            </div>
+
+            <!-- Add Monthly Task Form -->
+            <form onsubmit="handleAddMonthlyTask(event)" class="flex gap-2">
+                <input type="text" id="newMonthlyTaskInput" placeholder="Thêm việc cần hoàn thành trong tháng này..." required class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-xs font-medium">
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1 shadow-sm">
+                    <i class="fa-solid fa-plus"></i> Thêm việc tháng
+                </button>
+            </form>
+
+            <!-- Monthly Task List -->
+            <div class="space-y-2.5" id="monthlyTaskContainer">
+                <!-- Loaded via JS -->
+            </div>
+        </div>
+
+        <!-- ================= VIEW 3: MONTHLY HISTORY & ARCHIVE ================= -->
+        <div id="viewMonthlyStats" class="hidden space-y-5">
+            
+            <!-- Month & Year Selector for Viewing Archive -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-indigo-600 text-lg"></i>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-xs">Xem lại lịch sử</h3>
+                        <p class="text-[10px] text-slate-400">Lưu giữ trọn vẹn trong 1 năm</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <select id="archiveMonthSelect" onchange="changeArchiveMonth()" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <!-- Options generated by JS -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Summary Metric Widgets for Selected Archive Month -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase">Điểm tích lũy tháng</span>
+                    <p id="statTotalScore" class="text-2xl font-black text-indigo-600 mt-1">0</p>
+                    <span class="text-[10px] text-slate-400">Điểm thói quen đạt được</span>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase">Tỷ lệ hoàn thành</span>
+                    <p id="statCompletionRate" class="text-2xl font-black text-emerald-600 mt-1">0%</p>
+                    <span class="text-[10px] text-slate-400">Trung bình trong tháng</span>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm col-span-2 md:col-span-1">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase">Việc tháng hoàn thành</span>
+                    <p id="statMonthlyTasksDone" class="text-2xl font-black text-amber-500 mt-1">0/0</p>
+                    <span class="text-[10px] text-slate-400">Mục tiêu tháng đã đạt</span>
+                </div>
+            </div>
+
+            <!-- Heatmap Matrix Grid -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-xs md:text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-days text-indigo-600"></i>
+                            Bảng tiến độ thói quen tháng <span id="currentMonthYear"></span>
+                        </h3>
+                        <p class="text-[11px] text-slate-400">Mỗi ô hiển thị việc hoàn thành theo ngày</p>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto custom-scrollbar pb-2">
+                    <div id="monthlyGrid" class="min-w-[650px] space-y-2">
+                        <!-- Matrix generated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Notes Archive / Timeline -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="font-bold text-slate-800 text-xs md:text-sm flex items-center gap-2">
+                        <i class="fa-regular fa-comments text-amber-500"></i>
+                        Nhật ký & Ghi chú tự ngẫm trong tháng <span id="notesArchiveMonthLabel"></span>
+                    </h3>
+                    <span id="notesCountBadge" class="text-[10px] bg-amber-50 text-amber-700 font-bold px-2.5 py-1 rounded-lg border border-amber-200">0 ghi chú</span>
+                </div>
+
+                <div id="notesArchiveContainer" class="space-y-2.5 max-h-80 overflow-y-auto custom-scrollbar pr-1">
+                    <!-- Loaded via JS -->
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Profile Edit Modal -->
+    <div id="profileModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-xl border border-slate-100">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-id-card text-indigo-600"></i> Thông Tin Người Dùng
+                </h3>
+                <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <form onsubmit="handleSaveProfile(event)" class="space-y-3">
+                <div>
+                    <label class="text-[11px] font-bold text-slate-600 block mb-1">Họ & Tên người dùng</label>
+                    <input type="text" id="profileNameInput" required placeholder="Nhập tên của bạn..." class="w-full px-3 py-2 border rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="text-[11px] font-bold text-slate-600 block mb-1">Mục tiêu / Câu nói tâm đắc năm</label>
+                    <input type="text" id="profileMottoInput" placeholder="Ví dụ: Đọc hết Kinh Thánh năm 2026..." class="w-full px-3 py-2 border rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="text-[11px] font-bold text-slate-600 block mb-1">Năm rèn luyện</label>
+                    <input type="text" id="profileYearInput" value="2026" class="w-full px-3 py-2 border rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeProfileModal()" class="px-3 py-2 text-xs font-semibold text-slate-500">Hủy</button>
+                    <button type="submit" class="px-4 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Security Lock Settings Modal -->
+    <div id="lockSettingsModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-xl border border-slate-100">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-indigo-600"></i> Mật Khẩu Bảo Mật
+                </h3>
+                <button onclick="toggleLockSettings()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <p class="text-xs text-slate-500">Thiết lập mật khẩu/mã PIN để bảo vệ nhật ký và điểm số cá nhân không bị người khác tự ý xem.</p>
+
+            <form onsubmit="handleSavePasscode(event)" class="space-y-3">
+                <div>
+                    <label class="text-[11px] font-bold text-slate-600 block mb-1">Mật khẩu / Mã PIN mới</label>
+                    <input type="password" id="newPasscodeInput" placeholder="Nhập mật khẩu mới..." class="w-full px-3 py-2 border rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex items-center justify-between pt-2">
+                    <button type="button" onclick="removePasscode()" class="text-xs text-rose-600 font-semibold hover:underline">Xóa mật khẩu</button>
+                    <button type="submit" class="px-4 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Lưu mật khẩu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Backup & Restore Modal -->
+    <div id="backupModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-xl border border-slate-100">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-database text-indigo-600"></i> Quản Lý Dữ Liệu 1 Năm
+                </h3>
+                <button onclick="toggleBackupModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <p class="text-xs text-slate-500 leading-relaxed">
+                Dữ liệu được tự động bảo lưu trong 1 năm trên trình duyệt. Xuất file định kỳ để sao lưu an toàn.
+            </p>
+
+            <div class="space-y-2 pt-1">
+                <button onclick="exportDataJSON()" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs py-2.5 px-3 rounded-xl border border-indigo-200 flex items-center justify-center gap-2 transition-colors">
+                    <i class="fa-solid fa-download"></i> Tải file sao lưu (.json)
+                </button>
+                
+                <label class="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs py-2.5 px-3 rounded-xl border border-slate-200 flex items-center justify-center gap-2 transition-colors cursor-pointer">
+                    <i class="fa-solid fa-upload"></i> Nhập file khôi phục (.json)
+                    <input type="file" accept=".json" onchange="importDataJSON(event)" class="hidden">
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initial Default Daily Habits
+        const DEFAULT_HABITS = [
+            { id: '1', name: 'Thức sớm vào 6h00 sáng' },
+            { id: '2', name: 'Đọc 5 chương Kinh Thánh' },
+            { id: '3', name: 'Đọc 1 chương sách lẽ thật' },
+            { id: '4', name: 'Đọc 1 chương sách giảng đạo' },
+            { id: '5', name: 'Chạy 10 bước chân Mymemo' },
+            { id: '6', name: 'Truyền đạo đơn thuần cho 3 người' },
+            { id: '7', name: 'Ngủ sớm trước 23h' }
+        ];
+
+        // Default Monthly Tasks Template
+        const DEFAULT_MONTHLY_TASKS = [
+            { id: 'm_def_1', name: 'Đọc hoàn thành 1 cuốn sách lẽ thật trong tháng', done: false },
+            { id: 'm_def_2', name: 'Tĩnh nguyện & Kiêng ăn cầu nguyện 1 ngày', done: false },
+            { id: 'm_def_3', name: 'Tổng kết và đánh giá bảng điểm thói quen tháng', done: false }
+        ];
+
+        // Global Application State
+        let profile = JSON.parse(localStorage.getItem('user_profile')) || {
+            name: 'Người Dùng Rèn Luyện',
+            motto: 'Kiên trì mỗi ngày, kiến tạo tương lai',
+            year: '2026'
+        };
+        let passcode = localStorage.getItem('user_passcode') || '';
+        let habits = JSON.parse(localStorage.getItem('user_habits')) || DEFAULT_HABITS;
+        let records = JSON.parse(localStorage.getItem('habit_records')) || {}; 
+        let monthlyTasks = JSON.parse(localStorage.getItem('monthly_tasks')) || {};
+        let dailyNotes = JSON.parse(localStorage.getItem('daily_notes')) || {};
+        
+        let selectedDate = new Date().toISOString().split('T')[0];
+        let archiveMonthKey = selectedDate.substring(0, 7); // Default to current month "YYYY-MM"
+
+        // DOM Elements
+        const datePicker = document.getElementById('datePicker');
+        const habitContainer = document.getElementById('habitContainer');
+        const scoreText = document.getElementById('scoreText');
+        const totalText = document.getElementById('totalText');
+        const percentText = document.getElementById('percentText');
+        const motivationalMsg = document.getElementById('motivationalMsg');
+        const progressCirclePath = document.getElementById('progressCirclePath');
+        const dailyNoteInput = document.getElementById('dailyNoteInput');
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Security Lock Check
+            if (passcode) {
+                document.getElementById('lockScreenModal').classList.remove('hidden');
+                document.getElementById('lockStatusIcon').className = "fa-solid fa-lock text-amber-300";
+            } else {
+                document.getElementById('lockStatusIcon').className = "fa-solid fa-lock-open text-indigo-200";
+            }
+
+            datePicker.value = selectedDate;
+            datePicker.addEventListener('change', (e) => {
+                selectedDate = e.target.value;
+                archiveMonthKey = selectedDate.substring(0, 7);
+                renderAllViews();
+            });
+
+            renderProfile();
+            populateArchiveMonthDropdown();
+            renderAllViews();
+        });
+
+        /* Password Lock Logic */
+        function unlockApp() {
+            const val = document.getElementById('unlockPasscodeInput').value.trim();
+            if (val === passcode) {
+                document.getElementById('lockScreenModal').classList.add('hidden');
+                document.getElementById('lockErrorMsg').classList.add('hidden');
+            } else {
+                document.getElementById('lockErrorMsg').classList.remove('hidden');
+            }
+        }
+
+        function toggleLockSettings() {
+            document.getElementById('lockSettingsModal').classList.toggle('hidden');
+        }
+
+        function handleSavePasscode(e) {
+            e.preventDefault();
+            const val = document.getElementById('newPasscodeInput').value.trim();
+            passcode = val;
+            if (val) {
+                localStorage.setItem('user_passcode', val);
+                document.getElementById('lockStatusIcon').className = "fa-solid fa-lock text-amber-300";
+                alert('Đã thiết lập mật khẩu thành công!');
+            } else {
+                removePasscode();
+            }
+            toggleLockSettings();
+        }
+
+        function removePasscode() {
+            passcode = '';
+            localStorage.removeItem('user_passcode');
+            document.getElementById('lockStatusIcon').className = "fa-solid fa-lock-open text-indigo-200";
+            alert('Đã xóa mật khẩu bảo mật.');
+            toggleLockSettings();
+        }
+
+        function renderProfile() {
+            document.getElementById('displayUserName').innerText = profile.name;
+            document.getElementById('displayUserMotto').innerText = `"${profile.motto}"`;
+            document.getElementById('displayTargetYear').innerText = `Năm ${profile.year}`;
+            
+            const firstLetter = profile.name.trim().charAt(0).toUpperCase() || 'U';
+            document.getElementById('userAvatarBox').innerText = firstLetter;
+
+            // Sync Inputs
+            document.getElementById('profileNameInput').value = profile.name;
+            document.getElementById('profileMottoInput').value = profile.motto;
+            document.getElementById('profileYearInput').value = profile.year;
+        }
+
+        function openProfileModal() {
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+
+        function handleSaveProfile(e) {
+            e.preventDefault();
+            profile.name = document.getElementById('profileNameInput').value.trim() || 'Người Dùng';
+            profile.motto = document.getElementById('profileMottoInput').value.trim() || 'Kiên trì mỗi ngày';
+            profile.year = document.getElementById('profileYearInput').value.trim() || '2026';
+            
+            saveData('user_profile', profile);
+            renderProfile();
+            closeProfileModal();
+        }
+
+        function getSelectedMonthKey() {
+            return selectedDate.substring(0, 7); // "YYYY-MM"
+        }
+
+        function ensureMonthlyTasksExist(monthKey) {
+            if (!monthlyTasks[monthKey]) {
+                monthlyTasks[monthKey] = DEFAULT_MONTHLY_TASKS.map((item, index) => ({
+                    id: `m_${Date.now()}_${index}`,
+                    name: item.name,
+                    done: false
+                }));
+                saveData('monthly_tasks', monthlyTasks);
+            }
+            return monthlyTasks[monthKey];
+        }
+
+        function renderAllViews() {
+            renderDailyHabits();
+            renderMonthlyTasks();
+            renderMonthlyStats();
+            
+            const d = new Date(selectedDate);
+            document.getElementById('displayDateLabel').innerText = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+        }
+
+        // Tab Switching Logic
+        function switchTab(tab) {
+            const tabs = ['Daily', 'MonthlyTasks', 'MonthlyStats'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab${t}`);
+                const view = document.getElementById(`view${t}`);
+                
+                if (t.toLowerCase() === tab.toLowerCase()) {
+                    btn.className = "py-2.5 rounded-xl text-indigo-700 bg-white shadow-sm transition-all flex items-center justify-center gap-1.5 font-bold";
+                    view.classList.remove('hidden');
+                } else {
+                    btn.className = "py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 hover:text-slate-900";
+                    view.classList.add('hidden');
+                }
+            });
+
+            renderAllViews();
+        }
+
+        function handleAddHabit(e) {
+            e.preventDefault();
+            const input = document.getElementById('newHabitInput');
+            const name = input.value.trim();
+            if(!name) return;
+
+            const newHabit = { id: Date.now().toString(), name };
+            habits.push(newHabit);
+            saveData('user_habits', habits);
+            input.value = '';
+            renderAllViews();
+        }
+
+        function deleteHabit(id) {
+            if(confirm('Bạn có chắc chắn muốn xóa thói quen này?')) {
+                habits = habits.filter(h => h.id !== id);
+                saveData('user_habits', habits);
+                renderAllViews();
+            }
+        }
+
+        function toggleHabit(id) {
+            if (!records[selectedDate]) records[selectedDate] = [];
+            const index = records[selectedDate].indexOf(id);
+            if (index > -1) {
+                records[selectedDate].splice(index, 1);
+            } else {
+                records[selectedDate].push(id);
+            }
+            saveData('habit_records', records);
+            renderAllViews();
+        }
+
+        function saveDailyNote() {
+            const text = dailyNoteInput.value.trim();
+            dailyNotes[selectedDate] = text;
+            saveData('daily_notes', dailyNotes);
+            alert('Đã lưu ghi chú ngày vào kho nhật ký!');
+            renderMonthlyStats();
+        }
+
+        function renderDailyHabits() {
+            habitContainer.innerHTML = '';
+            const completedList = records[selectedDate] || [];
+            let currentScore = 0;
+
+            habits.forEach((habit) => {
+                const isDone = completedList.includes(habit.id);
+                if (isDone) currentScore++;
+
+                const card = document.createElement('div');
+                card.className = `flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer ${
+                    isDone ? 'bg-indigo-50/70 border-indigo-200 shadow-xs' : 'bg-white border-slate-100 hover:border-slate-200'
+                }`;
+
+                card.innerHTML = `
+                    <div class="flex items-center space-x-3 flex-1" onclick="toggleHabit('${habit.id}')">
+                        <div class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
+                            isDone ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300 bg-white'
+                        }">
+                            ${isDone ? '<i class="fa-solid fa-check text-[10px]"></i>' : ''}
+                        </div>
+                        <span class="text-xs font-semibold ${isDone ? 'line-through text-slate-400' : 'text-slate-700'}">${habit.name}</span>
+                    </div>
+                    <button onclick="event.stopPropagation(); deleteHabit('${habit.id}')" class="text-slate-300 hover:text-rose-500 px-2 py-1 transition-colors">
+                        <i class="fa-regular fa-trash-can text-xs"></i>
+                    </button>
+                `;
+                habitContainer.appendChild(card);
+            });
+
+            // Progress Header
+            const totalScore = habits.length;
+            const percent = totalScore > 0 ? Math.round((currentScore / totalScore) * 100) : 0;
+            scoreText.innerText = currentScore;
+            totalText.innerText = `/ ${totalScore} điểm`;
+            percentText.innerText = `${percent}%`;
+
+            progressCirclePath.setAttribute('stroke-dasharray', `${percent}, 100`);
+
+            if (percent === 100) motivationalMsg.innerText = "Tuyệt vời! Bạn đã hoàn thành tất cả thói quen hôm nay 🎉";
+            else if (percent >= 50) motivationalMsg.innerText = "Cố lên! Bạn đang thực hiện rất tốt 👍";
+            else motivationalMsg.innerText = "Hãy kiên trì hoàn thành từng thói quen nhé! 💪";
+
+            dailyNoteInput.value = dailyNotes[selectedDate] || '';
+        }
+
+        function handleAddMonthlyTask(e) {
+            e.preventDefault();
+            const input = document.getElementById('newMonthlyTaskInput');
+            const name = input.value.trim();
+            if(!name) return;
+
+            const monthKey = getSelectedMonthKey();
+            ensureMonthlyTasksExist(monthKey);
+
+            monthlyTasks[monthKey].push({ id: Date.now().toString(), name, done: false });
+            saveData('monthly_tasks', monthlyTasks);
+            input.value = '';
+            renderAllViews();
+        }
+
+        function toggleMonthlyTask(id) {
+            const monthKey = getSelectedMonthKey();
+            if (!monthlyTasks[monthKey]) return;
+
+            const task = monthlyTasks[monthKey].find(t => t.id === id);
+            if (task) {
+                task.done = !task.done;
+                saveData('monthly_tasks', monthlyTasks);
+                renderAllViews();
+            }
+        }
+
+        function deleteMonthlyTask(id) {
+            const monthKey = getSelectedMonthKey();
+            if (!monthlyTasks[monthKey]) return;
+
+            if(confirm('Bạn có chắc chắn muốn xóa việc này?')) {
+                monthlyTasks[monthKey] = monthlyTasks[monthKey].filter(t => t.id !== id);
+                saveData('monthly_tasks', monthlyTasks);
+                renderAllViews();
+            }
+        }
+
+        function renderMonthlyTasks() {
+            const monthKey = getSelectedMonthKey();
+            const container = document.getElementById('monthlyTaskContainer');
+            document.getElementById('monthlyTaskTitleDate').innerText = `${monthKey.split('-')[1]}/${monthKey.split('-')[0]}`;
+            
+            container.innerHTML = '';
+            const tasks = ensureMonthlyTasksExist(monthKey);
+            let doneCount = 0;
+
+            tasks.forEach(task => {
+                if(task.done) doneCount++;
+
+                const card = document.createElement('div');
+                card.className = `flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer ${
+                    task.done ? 'bg-indigo-50/70 border-indigo-200' : 'bg-white border-slate-100 hover:border-slate-200'
+                }`;
+
+                card.innerHTML = `
+                    <div class="flex items-center space-x-3 flex-1" onclick="toggleMonthlyTask('${task.id}')">
+                        <div class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
+                            task.done ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-slate-300 bg-white'
+                        }">
+                            ${task.done ? '<i class="fa-solid fa-check text-[10px]"></i>' : ''}
+                        </div>
+                        <span class="text-xs font-semibold ${task.done ? 'line-through text-slate-400' : 'text-slate-700'}">${task.name}</span>
+                    </div>
+                    <button onclick="event.stopPropagation(); deleteMonthlyTask('${task.id}')" class="text-slate-300 hover:text-rose-500 px-2 py-1 transition-colors">
+                        <i class="fa-regular fa-trash-can text-xs"></i>
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+
+            if (tasks.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs">Chưa có công việc nào cho tháng này. Hãy thêm mới ở trên!</div>`;
+            }
+
+            document.getElementById('monthlyTaskBadge').innerText = `${doneCount} / ${tasks.length} Đạt`;
+            const pct = tasks.length > 0 ? Math.round((doneCount / tasks.length) * 100) : 0;
+            document.getElementById('monthlyTaskProgressBar').style.width = `${pct}%`;
+        }
+
+        function populateArchiveMonthDropdown() {
+            const select = document.getElementById('archiveMonthSelect');
+            select.innerHTML = '';
+            
+            const currentYear = parseInt(profile.year) || new Date().getFullYear();
+
+            // Populate 12 months for selected year
+            for (let m = 1; m <= 12; m++) {
+                const monthStr = String(m).padStart(2, '0');
+                const key = `${currentYear}-${monthStr}`;
+                const option = document.createElement('option');
+                option.value = key;
+                option.innerText = `Tháng ${m}/${currentYear}`;
+                if (key === archiveMonthKey) option.selected = true;
+                select.appendChild(option);
+            }
+        }
+
+        function changeArchiveMonth() {
+            archiveMonthKey = document.getElementById('archiveMonthSelect').value;
+            renderMonthlyStats();
+        }
+
+        function renderMonthlyStats() {
+            const gridContainer = document.getElementById('monthlyGrid');
+            const monthHeader = document.getElementById('currentMonthYear');
+            gridContainer.innerHTML = '';
+
+            const [yearStr, monthStr] = archiveMonthKey.split('-');
+            const year = parseInt(yearStr);
+            const month = parseInt(monthStr) - 1; // 0-indexed
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            monthHeader.innerText = `${month + 1}/${year}`;
+            document.getElementById('notesArchiveMonthLabel').innerText = `${month + 1}/${year}`;
+
+            // Calculate Metrics
+            let totalMonthlyPoints = 0;
+            let possiblePointsSum = 0;
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const count = (records[dayStr] || []).length;
+                totalMonthlyPoints += count;
+                possiblePointsSum += habits.length;
+            }
+
+            const overallPct = possiblePointsSum > 0 ? Math.round((totalMonthlyPoints / possiblePointsSum) * 100) : 0;
+
+            document.getElementById('statTotalScore').innerText = totalMonthlyPoints;
+            document.getElementById('statCompletionRate').innerText = `${overallPct}%`;
+
+            const mTasks = monthlyTasks[archiveMonthKey] || [];
+            const mDone = mTasks.filter(t => t.done).length;
+            document.getElementById('statMonthlyTasksDone').innerText = `${mDone}/${mTasks.length}`;
+
+            // Header Row (Days)
+            const headerRow = document.createElement('div');
+            headerRow.className = 'flex items-center space-x-1 text-xs font-semibold text-slate-400 border-b pb-2';
+            headerRow.innerHTML = `<div class="w-44 font-semibold text-slate-600">Thói quen</div>`;
+            for (let d = 1; d <= daysInMonth; d++) {
+                headerRow.innerHTML += `<div class="w-5 text-center text-[10px]">${d}</div>`;
+            }
+            gridContainer.appendChild(headerRow);
+
+            // Matrix Rows
+            habits.forEach(habit => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center space-x-1 text-xs';
+                row.innerHTML = `<div class="w-44 truncate font-medium text-slate-700 text-[11px]" title="${habit.name}">${habit.name}</div>`;
+
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                    const isDone = (records[dayStr] || []).includes(habit.id);
+                    row.innerHTML += `
+                        <div class="w-5 h-5 rounded flex items-center justify-center font-bold text-[9px] ${
+                            isDone ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-transparent'
+                        }">
+                            ✓
+                        </div>
+                    `;
+                }
+                gridContainer.appendChild(row);
+            });
+
+            // Render Notes Archive List for selected Month
+            renderDailyNotesArchive(year, month + 1, daysInMonth);
+        }
+
+        function renderDailyNotesArchive(year, month, daysInMonth) {
+            const container = document.getElementById('notesArchiveContainer');
+            container.innerHTML = '';
+
+            let notesFound = 0;
+
+            for (let d = daysInMonth; d >= 1; d--) {
+                const dayStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const noteText = dailyNotes[dayStr];
+
+                if (noteText && noteText.trim() !== '') {
+                    notesFound++;
+                    const card = document.createElement('div');
+                    card.className = "p-3 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1 hover:border-indigo-300 transition-colors cursor-pointer";
+                    card.onclick = () => {
+                        selectedDate = dayStr;
+                        datePicker.value = selectedDate;
+                        switchTab('daily');
+                    };
+
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between text-[11px] font-bold text-indigo-700">
+                            <span><i class="fa-regular fa-calendar-check mr-1"></i> Ngày ${d}/${month}/${year}</span>
+                            <span class="text-[10px] text-slate-400 font-normal">Xem chi tiết &rarr;</span>
+                        </div>
+                        <p class="text-xs text-slate-700 whitespace-pre-line leading-relaxed font-normal">${escapeHtml(noteText)}</p>
+                    `;
+                    container.appendChild(card);
+                }
+            }
+
+            document.getElementById('notesCountBadge').innerText = `${notesFound} ghi chú`;
+
+            if (notesFound === 0) {
+                container.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">Chưa có ghi chú nào được lưu trong tháng ${month}/${year}.</div>`;
+            }
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function saveData(key, val) {
+            localStorage.setItem(key, JSON.stringify(val));
+        }
+
+        function toggleBackupModal() {
+            document.getElementById('backupModal').classList.toggle('hidden');
+        }
+
+        function exportDataJSON() {
+            const data = { profile, habits, records, monthlyTasks, dailyNotes };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `HabitTracker_FullBackup_${selectedDate}.json`;
+            a.click();
+        }
+
+        function importDataJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported.profile) saveData('user_profile', imported.profile);
+                    if (imported.habits) saveData('user_habits', imported.habits);
+                    if (imported.records) saveData('habit_records', imported.records);
+                    if (imported.monthlyTasks) saveData('monthly_tasks', imported.monthlyTasks);
+                    if (imported.dailyNotes) saveData('daily_notes', imported.dailyNotes);
+
+                    location.reload();
+                } catch (err) {
+                    alert('File không hợp lệ!');
+                }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
